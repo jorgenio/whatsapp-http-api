@@ -23,7 +23,6 @@ import {
 } from './abc/session.abc';
 import { DOCS_URL } from './exceptions';
 import { getProxyConfig } from './helpers.proxy';
-import { WhatsappSessionNoWebCore } from './session.noweb.core';
 import { WhatsappSessionVenomCore } from './session.venom.core';
 import { WhatsappSessionWebJSCore } from './session.webjs.core';
 import { MediaStorageCore, SessionStorageCore } from './storage.core';
@@ -75,9 +74,7 @@ export class SessionManagerCore extends SessionManager {
       return WhatsappSessionWebJSCore;
     } else if (engine === WAHAEngine.VENOM) {
       return WhatsappSessionVenomCore;
-    } else if (engine === WAHAEngine.NOWEB) {
-      return WhatsappSessionNoWebCore;
-    } else {
+    }else {
       throw new NotFoundException(`Unknown whatsapp engine '${engine}'.`);
     }
   }

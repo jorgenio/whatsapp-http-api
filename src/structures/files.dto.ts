@@ -12,6 +12,11 @@ export class RemoteFile {
     example: 'filename.jpg',
   })
   filename?: string | null;
+  @ApiProperty({
+    description: 'Document file name. Value can be null',
+    example: 'sdfsdf',
+  })
+  data?: string | null;
 
   @ApiProperty({
     example:
