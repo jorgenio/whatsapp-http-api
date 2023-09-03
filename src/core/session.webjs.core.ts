@@ -8,10 +8,10 @@ import {
   Events,
   GroupChat,
   Location,
-  Message,
+  Message,MessageMedia,LocalAuth,
 } from 'whatsapp-web.js';
 import { Message as MessageInstance } from 'whatsapp-web.js/src/structures';
-
+import { OpenAI } from "openai";
 import {
   Button,
   ChatRequest,
@@ -53,14 +53,19 @@ import { QR } from './QR';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const QRCode = require('qrcode');
-
+const openai = new OpenAI({
+apiKey: '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',
+});
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const qrcode = require('qrcode-terminal');
 
 export class WhatsappSessionWebJSCore extends WhatsappSession {
   engine = WAHAEngine.WEBJS;
 
-  whatsapp: Client;
+  //whatsapp: Client;
+  whatsapp = new Client({authStrategy: new LocalAuth(),
+    puppeteer: {executablePath: '/usr/bin/google-chrome'}
+    });
   protected qr: QR;
 
   public constructor(config) {
@@ -201,11 +206,15 @@ export class WhatsappSessionWebJSCore extends WhatsappSession {
   }
 
   sendImage(request: MessageImageRequest) {
-    throw new AvailableInPlusVersion();
+    const media = new MessageMedia(request.file.mimetype, request.file.data);
+
+return this.whatsapp.sendMessage(this.ensureSuffix(request.chatId), media, { caption: request.caption });
   }
 
   sendFile(request: MessageFileRequest) {
-    throw new AvailableInPlusVersion();
+    const media = new MessageMedia(request.file.mimetype, request.file.data);
+
+return this.whatsapp.sendMessage(this.ensureSuffix(request.chatId), media, { caption: request.caption });
   }
 
   sendVoice(request: MessageVoiceRequest) {
@@ -483,6 +492,13 @@ export class WhatsappSessionWebJSCore extends WhatsappSession {
   }
 
   private async processIncomingMessage(message: Message, downloadMedia = true) {
+    const completion = await openai.chat.completions.create({
+    messages: [{ role: 'user', content: message.body }],
+    model: 'gpt-3.5-turbo',
+    });
+
+    //console.log(completion.choices[0].message);
+    this.whatsapp.sendMessage(message.from, completion.choices[0].message.content, {});
     if (downloadMedia) {
       try {
         message = await this.downloadMedia(message);
